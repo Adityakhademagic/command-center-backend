@@ -61,28 +61,3 @@ jobs:
           soft_fail: true # Set to false if you want security violations to block the PR
 
 
-
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Principal": {
-                "Federated": "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
-            },
-            "Action": "sts:AssumeRoleWithWebIdentity",
-            "Condition": {
-                "StringEquals": {
-                    "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
-                },
-                "StringLike": {
-                    "token.actions.githubusercontent.com:sub": [
-                        "repo:my-organization/infrastructure-repo:ref:refs/heads/main",
-                        "repo:my-organization/ecs-app-repo:pull_request",
-                        "repo:my-organization/shared-modules-repo:*"
-                    ]
-                }
-            }
-        }
-    ]
-}
