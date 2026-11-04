@@ -62,5 +62,27 @@ jobs:
 
 
 
-          In your AWS IAM Console, create an IAM role with a Trust Policy trusting your GitHub repository (e.g., repo:your-github-org/your-repo:*).
-Attach the necessary IAM policies (like AdministratorAccess or custom permissions) to that role.
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+                },
+                "StringLike": {
+                    "token.actions.githubusercontent.com:sub": [
+                        "repo:my-organization/infrastructure-repo:ref:refs/heads/main",
+                        "repo:my-organization/ecs-app-repo:pull_request",
+                        "repo:my-organization/shared-modules-repo:*"
+                    ]
+                }
+            }
+        }
+    ]
+}
