@@ -1,0 +1,66 @@
+name: "Terraform Testing & Quality Checks"
+
+on:
+  # 1. Enable Manual Trigger from GitHub UI
+  workflow_dispatch:
+    inputs:
+      log_level:
+        description: 'Run with verbose logging (debug)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  test:
+    name: "Validate & Test"
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Setup Terraform CLI
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      # 3. Check Terraform Formatting
+      # Fails if files are not formatted with 'terraform fmt'
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check -recursive
+
+      # 4. Initialize Terraform (downloads providers, no backend required for basic checks if configured locally)
+      - name: Terraform Init
+        id: init
+        run: terraform init -backend=false
+
+      # 5. Validate Terraform Syntax
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+
+      # 6. Install and Run TFLint (Linter for Terraform best practices & potential errors)
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run TFLint
+        run: |
+          tflint --init
+          tflint -f compact
+
+      # 7. Optional: Run Checkov (Static Code Analysis for Security & Compliance)
+      - name: Run Checkov Security Scan
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          framework: terraform
+          soft_fail: true # Set to false if you want security violations to block the PR
+
+
+
+          In your AWS IAM Console, create an IAM role with a Trust Policy trusting your GitHub repository (e.g., repo:your-github-org/your-repo:*).
+Attach the necessary IAM policies (like AdministratorAccess or custom permissions) to that role.
